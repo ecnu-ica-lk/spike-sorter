@@ -39,14 +39,15 @@ static double sqrarg;
 #define SQR(a) ((sqrarg = (a)) == 0.0 ? 0.0 : sqrarg * sqrarg)
 
 
-PCAjob::PCAjob(SorterSpikeArray& _spikes, float* _pc1, float* _pc2,
-                std::atomic<float>& pc1Min,  std::atomic<float>& pc2Min,  std::atomic<float>&pc1Max,  std::atomic<float>& pc2Max, std::atomic<bool>& _reportDone) : spikes(_spikes),
-pc1min(pc1Min), pc2min(pc2Min), pc1max(pc1Max), pc2max(pc2Max), reportDone(_reportDone)
+PCAjob::PCAjob(SorterSpikeArray& _spikes, float* _pc1, float* _pc2, float* _pc3,
+                std::atomic<float>& pc1Min,  std::atomic<float>& pc2Min, std::atomic<float>& pc3Min, std::atomic<float>&pc1Max,  std::atomic<float>& pc2Max, std::atomic<float>& pc3Max, std::atomic<bool>& _reportDone) : spikes(_spikes),
+pc1min(pc1Min), pc2min(pc2Min), pc3min(pc3Min), pc1max(pc1Max), pc2max(pc2Max), pc3max(pc3Max), reportDone(_reportDone)
 {
 	SorterSpikePtr spike = spikes[0];
     cov = nullptr;
     pc1 = _pc1;
     pc2 = _pc2;
+    pc3 = _pc3;
 
     dim = spike->getChannel()->getNumChannels()*spike->getChannel()->getTotalSamples();
 
@@ -374,11 +375,11 @@ std::vector<int> sort_indexes(std::vector<float> v)
     //sort indexes based on comparing values in v
     sort(
         idx.begin(),
-        idx.end()//,
-        //[&v](size_t i1, size_t i2)
-        //{
-        //	return v[i1] > v[i2];
-        //}
+        idx.end(),
+        [&v](size_t i1, size_t i2)
+        {
+        	return v[i1] > v[i2];
+        }
     );
 
     return idx;
@@ -414,34 +415,46 @@ void PCAjob::computeSVD()
     {
         pc1[k] = eigvec[k][sortind[0]];
         pc2[k] = eigvec[k][sortind[1]];
+        pc3[k] = eigvec[k][sortind[2]];
+        //std::cout << "X:" << eigvec[k][sortind[0]] << std::endl;
+        //std::cout << "Y:" << eigvec[k][sortind[1]] << std::endl;
+        //std::cout << "Z:" << eigvec[k][sortind[2]] << std::endl<<std::endl;
+
     }
     // project samples to find the display range
-    float min1 = 1e10, min2 = 1e10, max1 = -1e10, max2 = -1e10;
+    float min1 = 1e10, min2 = 1e10, min3 = 1e10, max1 = -1e10, max2 = -1e10, max3=-1e10;
 
     for (int j = 0; j < spikes.size(); j++)
     {
-        float sum1 = 0, sum2=0;
+        float sum1 = 0, sum2=0, sum3=0;
         for (int k = 0; k < dim; k++)
         {
             SorterSpikePtr spike = spikes[j];
             sum1 += spike->spikeDataIndexToMicrovolts(k) * pc1[k];
             sum2 += spike->spikeDataIndexToMicrovolts(k) * pc2[k];
+            sum3 += spike->spikeDataIndexToMicrovolts(k) * pc3[k];
         }
         if (sum1 < min1)
             min1 = sum1;
         if (sum2 < min2)
             min2 = sum2;
+        if (sum3 < min3)
+            min3 = sum3;
         if (sum1 > max1)
             max1 = sum1;
         if (sum2 > max2)
             max2 = sum2;
+        if (sum3 > max3)
+            max3 = sum3;
     }
 
 
     pc1min = min1 - 1.5 * (max1-min1);
     pc2min = min2 - 1.5 * (max2-min2);
+    pc3min = min3 - 1.5 * (max3 - min3);
     pc1max = max1 + 1.5 * (max1-min1);
     pc2max = max2 + 1.5 * (max2-min2);
+    pc3max = max3 + 1.5 * (max3 - min3);
 
     // clear memory
     for (int k = 0; k < dim; k++)

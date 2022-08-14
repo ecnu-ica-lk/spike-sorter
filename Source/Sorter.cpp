@@ -47,8 +47,10 @@ Sorter::Sorter(Electrode* electrode_, PCAComputingThread* pcaThread_)
       selectedBox(-1),
       pc1min(-5),
       pc2min(-5),
+      pc3min(-5),
       pc1max(5),
       pc2max(5),
+      pc3max(5),
       numChannels(electrode_->numChannels),
       waveformLength(electrode_->numSamples)
      
@@ -56,6 +58,7 @@ Sorter::Sorter(Electrode* electrode_, PCAComputingThread* pcaThread_)
 
     pc1 = new float[int64(numChannels) * waveformLength];
     pc2 = new float[int64(numChannels) * waveformLength];
+    pc3 = new float[int64(numChannels) * waveformLength];
 
     for (int n = 0; n < bufferSize; n++)
     {
@@ -71,9 +74,11 @@ void Sorter::resizeWaveform(int numSamples)
     
     delete[] pc1;
     delete[] pc2;
+    delete[] pc3;
 
     pc1 = new float[int64(numChannels) * waveformLength];
     pc2 = new float[int64(numChannels) * waveformLength];
+    pc3 = new float[int64(numChannels) * waveformLength];
 
     spikeBuffer.clear();
     
@@ -91,17 +96,20 @@ void Sorter::resizeWaveform(int numSamples)
 	bRePCA = false;
 	pc1min = -1;
 	pc2min = -1;
+    pc3min = -1;
 	pc1max = 1;
 	pc2max = 1;
-
+    pc3max = 1;
 }
 
 Sorter::~Sorter()
 {
     delete[] pc1;
     delete[] pc2;
+    delete[] pc3;
     pc1 = nullptr;
     pc2 = nullptr;
+    pc3 = nullptr;
 }
 
 void Sorter::setSelectedUnitAndBox(int unitID, int boxID)
@@ -149,6 +157,7 @@ void Sorter::projectOnPrincipalComponents(SorterSpikePtr so)
 
             so->pcProj[0] += pc1[k]* v;
             so->pcProj[1] += pc2[k]* v;
+            so->pcProj[2] += pc3[k] * v;
 
         }
 
@@ -163,26 +172,30 @@ void Sorter::projectOnPrincipalComponents(SorterSpikePtr so)
 	    bPCAComputed = false;
         bRePCA = false;
 
-        PCAJobPtr job = new PCAjob(spikeBuffer, pc1, pc2, pc1min, pc2min, pc1max, pc2max, bPCAJobFinished);
+        PCAJobPtr job = new PCAjob(spikeBuffer, pc1, pc2, pc3, pc1min, pc2min, pc3min,pc1max, pc2max, pc3max, bPCAJobFinished);
         computingThread->addPCAjob(job);
     }
 
 }
 
-void Sorter::getPCArange(float& p1min,float& p2min, float& p1max,  float& p2max)
+void Sorter::getPCArange(float& p1min,float& p2min, float& p3min,float& p1max,  float& p2max,float& p3max)
 {
     p1min = pc1min;
     p2min = pc2min;
+    p3min = pc3min;
     p1max = pc1max;
     p2max = pc2max;
+    p3max = pc3max;
 }
 
-void Sorter::setPCArange(float p1min,float p2min, float p1max,  float p2max)
+void Sorter::setPCArange(float p1min,float p2min, float p3min, float p1max,  float p2max, float p3max)
 {
     pc1min = p1min;
     pc2min = p2min;
+    pc3min = p3min;
     pc1max = p1max;
     pc2max = p2max;
+    pc3max = p3max;
 }
 
 void Sorter::resetJobStatus()
@@ -515,14 +528,17 @@ void Sorter::saveCustomParametersToXml(XmlElement* xml)
     pcaNode->setAttribute("waveformLength", waveformLength);
     pcaNode->setAttribute("pc1min", pc1min);
     pcaNode->setAttribute("pc2min", pc2min);
+    pcaNode->setAttribute("pc3min", pc3min);
     pcaNode->setAttribute("pc1max", pc1max);
     pcaNode->setAttribute("pc2max", pc2max);
+    pcaNode->setAttribute("pc3max", pc3max);
 
     for (int k = 0; k < numChannels * waveformLength; k++)
     {
         XmlElement* dimNode = pcaNode->createNewChildElement("PCA_DIM");
         dimNode->setAttribute("pc1", pc1[k]);
         dimNode->setAttribute("pc2", pc2[k]);
+        dimNode->setAttribute("pc3", pc3[k]);
     }
 
     for (int pcaUnitIter = 0; pcaUnitIter < pcaUnits.size(); pcaUnitIter++)
@@ -584,14 +600,18 @@ void Sorter::loadCustomParametersFromXml(XmlElement* xml)
 
             pc1min = sorterNode->getDoubleAttribute("pc1min");
             pc2min = sorterNode->getDoubleAttribute("pc2min");
+            pc3min = sorterNode->getDoubleAttribute("pc3min");
             pc1max = sorterNode->getDoubleAttribute("pc1max");
             pc2max = sorterNode->getDoubleAttribute("pc2max");
+            pc3max = sorterNode->getDoubleAttribute("pc3max");
 
             delete[] pc1;
             delete[] pc2;
+            delete[] pc3;
 
             pc1 = new float[waveformLength * numChannels];
             pc2 = new float[waveformLength * numChannels];
+            pc3 = new float[waveformLength * numChannels];
             int dimcounter = 0;
 
             forEachXmlChildElement(*sorterNode, dimNode)
@@ -600,6 +620,7 @@ void Sorter::loadCustomParametersFromXml(XmlElement* xml)
                 {
                     pc1[dimcounter] = dimNode->getDoubleAttribute("pc1");
                     pc2[dimcounter] = dimNode->getDoubleAttribute("pc2");
+                    pc3[dimcounter] = dimNode->getDoubleAttribute("pc3");
                     dimcounter++;
                 }
             }

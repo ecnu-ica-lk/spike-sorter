@@ -71,7 +71,7 @@ public:
     void setPolygonDrawingMode(bool on);
 
     /** Sets the range of the PCAProjetionAxes*/
-    void setPCARange(float p1min, float p2min, float p1max, float p2max);
+    void setPCARange(float p1min, float p2min, float p3min, float p1max, float p2max, float p3max);
 
     /** Sets axes limits*/
     void modifyRange(int index ,bool up);

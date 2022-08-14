@@ -227,16 +227,18 @@ void PCAProjectionAxes::redraw(bool subsample)
 
 }
 
-void PCAProjectionAxes::setPCARange(float p1min, float p2min, float p1max, float p2max)
+void PCAProjectionAxes::setPCARange(float p1min, float p2min, float p3min, float p1max, float p2max, float p3max)
 {
 
     pcaMin[0] = p1min;
     pcaMin[1] = p2min;
+    pcaMin[2] = p3min;
     pcaMax[0] = p1max;
     pcaMax[1] = p2max;
+    pcaMax[2] = p3max;
     rangeSet = true;
     redrawSpikes = true;
-    electrode->sorter->setPCArange(p1min, p2min, p1max, p2max);
+    electrode->sorter->setPCArange(p1min, p2min, p3min, p1max, p2max, p3max);
 
 }
 
@@ -329,7 +331,7 @@ void PCAProjectionAxes::mouseDrag(const juce::MouseEvent& event)
             pcaMin[1] += dy;
             pcaMax[0] += dx;
             pcaMax[1] += dy;
-            electrode->sorter->setPCArange(pcaMin[0], pcaMin[1], pcaMax[0], pcaMax[1]);
+            electrode->sorter->setPCArange(pcaMin[0], pcaMin[1], pcaMin[2], pcaMax[0], pcaMax[1],pcaMax[2]);
 
             // draw polygon
             prevx = event.x;
@@ -465,23 +467,29 @@ void PCAProjectionAxes::rangeDown()
 {
     float range0 = pcaMax[0] - pcaMin[0];
     float range1 = pcaMax[1] - pcaMin[1];
+    float range2 = pcaMax[2] - pcaMin[2];
     pcaMin[0] = pcaMin[0] - 0.1 * range0;
     pcaMax[0] = pcaMax[0] + 0.1 * range0;
     pcaMin[1] = pcaMin[1] - 0.1 * range1;
     pcaMax[1] = pcaMax[1] + 0.1 * range1;
-    setPCARange(pcaMin[0], pcaMin[1], pcaMax[0], pcaMax[1]);
+    pcaMin[2] = pcaMin[2] - 0.1 * range2;
+    pcaMax[2] = pcaMax[2] + 0.1 * range2;
+    setPCARange(pcaMin[0], pcaMin[1], pcaMin[2], pcaMax[0], pcaMax[1], pcaMax[2]);
 }
 
 void PCAProjectionAxes::rangeUp()
 {
     float range0 = pcaMax[0] - pcaMin[0];
     float range1 = pcaMax[1] - pcaMin[1];
+    float range2 = pcaMax[2] - pcaMin[2];
     pcaMin[0] = pcaMin[0] + 0.1 * range0;
     pcaMax[0] = pcaMax[0] - 0.1 * range0;
     pcaMin[1] = pcaMin[1] + 0.1 * range1;
     pcaMax[1] = pcaMax[1] - 0.1 * range1;
+    pcaMin[2] = pcaMin[2] + 0.1 * range2;
+    pcaMax[2] = pcaMax[2] - 0.1 * range2;
 
-    setPCARange(pcaMin[0], pcaMin[1], pcaMax[0], pcaMax[1]);
+    setPCARange(pcaMin[0], pcaMin[1], pcaMin[2], pcaMax[0], pcaMax[1], pcaMax[2]);
 
 }
 

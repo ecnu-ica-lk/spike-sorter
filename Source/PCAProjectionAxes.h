@@ -45,7 +45,7 @@ public:
     ~PCAProjectionAxes() {}
 
     /** Sets range for PCA*/
-    void setPCARange(float p1min, float p2min, float p1max, float p2max);
+    void setPCARange(float p1min, float p2min, float p3min, float p1max, float p2max, float p3max);
 
     /** Adds a new spike object*/
 	bool updateSpikeData(SorterSpikePtr s);
@@ -110,7 +110,7 @@ private:
 
     int spikesReceivedSinceLastRedraw;
 
-    float pcaMin[2],pcaMax[2];
+    float pcaMin[3],pcaMax[3];
     std::list<PointD> drawnPolygon;
 
     std::vector<PCAUnit> units;

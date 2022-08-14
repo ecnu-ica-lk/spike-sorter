@@ -107,7 +107,7 @@ public:
     uint8 color[3];
 
     /** PC projections (X/Y)*/
-    float pcProj[2];
+    float pcProj[3];
 
     /** Sorted ID (> 0) */
     uint16 sortedId;

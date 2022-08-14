@@ -103,10 +103,10 @@ public:
     void removeAllUnits();
 
     /** Copies the range values for the PC axes */
-    void getPCArange(float& p1min, float& p2min, float& p1max, float& p2max);
+    void getPCArange(float& p1min, float& p2min, float& p3min, float& p1max, float& p2max, float& p3max);
 
     /** Sets the range values for the PC axes */
-    void setPCArange(float p1min, float p2min, float p1max, float p2max);
+    void setPCArange(float p1min, float p2min, float p3min, float p1max, float p2max, float p3max);
 
     /** Sets bPCAJobFinished to false */
     void resetJobStatus();
@@ -168,8 +168,8 @@ private:
     int numChannels, waveformLength;
     int selectedUnit, selectedBox;
     
-    float* pc1, *pc2;
-    std::atomic<float> pc1min, pc2min, pc1max, pc2max;
+    float* pc1, *pc2, *pc3;
+    std::atomic<float> pc1min, pc2min, pc3min, pc1max, pc2max, pc3max;
     
     int bufferSize,spikeBufferIndex;
     

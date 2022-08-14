@@ -180,9 +180,9 @@ void SpikeSorter::handleSpike(SpikePtr newSpike)
             if (electrode->sorter->isPCAfinished())
             {
                 electrode->sorter->resetJobStatus();
-                float p1min, p2min, p1max, p2max;
-                electrode->sorter->getPCArange(p1min, p2min, p1max, p2max);
-                electrode->plot->setPCARange(p1min, p2min, p1max, p2max);
+                float p1min, p2min, p3min, p1max, p2max, p3max;
+                electrode->sorter->getPCArange(p1min, p2min, p3min, p1max, p2max, p3max);
+                electrode->plot->setPCARange(p1min, p2min, p3min, p1max, p2max, p3max);
             }
 
             electrode->plot->processSpikeObject(sorterSpike);

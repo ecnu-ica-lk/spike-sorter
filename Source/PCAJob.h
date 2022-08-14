@@ -43,8 +43,8 @@ class PCAjob : public ReferenceCountedObject
 public:
 
     /** Constructor */
-    PCAjob(SorterSpikeArray& _spikes, float* _pc1, float* _pc2,
-           std::atomic<float>&,  std::atomic<float>&,  std::atomic<float>&,  std::atomic<float>&, std::atomic<bool>& _reportDone);
+    PCAjob(SorterSpikeArray& _spikes, float* _pc1, float* _pc2, float* _pc3,
+           std::atomic<float>&,  std::atomic<float>&,  std::atomic<float>&,  std::atomic<float>&, std::atomic<float>&, std::atomic<float>&, std::atomic<bool>& _reportDone);
 
     /** Destructor */
     ~PCAjob();
@@ -57,8 +57,8 @@ public:
 
     float** cov;
     SorterSpikeArray spikes;
-    float* pc1, *pc2;
-    std::atomic<float>& pc1min, &pc2min, &pc1max, &pc2max;
+    float* pc1, *pc2,*pc3;
+    std::atomic<float>& pc1min, &pc2min, &pc3min, &pc1max, &pc2max, &pc3max;
     std::atomic<bool>& reportDone;
 
 private:

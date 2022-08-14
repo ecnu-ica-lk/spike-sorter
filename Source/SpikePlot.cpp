@@ -159,10 +159,10 @@ void SpikePlot::updateUnits()
 
 }
 
-void SpikePlot::setPCARange(float p1min, float p2min, float p1max, float p2max)
+void SpikePlot::setPCARange(float p1min, float p2min, float p3min, float p1max, float p2max, float p3max)
 {
     const ScopedLock myScopedLock(mut);
-    pAxes[0]->setPCARange(p1min, p2min, p1max, p2max);
+    pAxes[0]->setPCARange(p1min, p2min, p3min, p1max, p2max, p3max);
 }
 
 void SpikePlot::processSpikeObject(SorterSpikePtr s)
@@ -196,9 +196,9 @@ void SpikePlot::initAxes(std::vector<float> scales)
     }
 
     PCAProjectionAxes* pAx = new PCAProjectionAxes(electrode);
-    float p1min, p2min, p1max, p2max;
-    electrode->sorter->getPCArange(p1min, p2min, p1max, p2max);
-    pAx->setPCARange(p1min, p2min, p1max, p2max);
+    float p1min, p2min, p3min, p1max, p2max, p3max;
+    electrode->sorter->getPCArange(p1min, p2min, p3min, p1max, p2max,p3max);
+    pAx->setPCARange(p1min, p2min, p3min, p1max, p2max, p3max);
 
     pAxes.add(pAx);
     addAndMakeVisible(pAx);
