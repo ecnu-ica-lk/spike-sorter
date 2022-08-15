@@ -1,4 +1,6 @@
 # Files and folders to ignore
+.cache
+compile_commands.json
 
 # 1. intermediate files
 *.o
