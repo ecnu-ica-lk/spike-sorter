@@ -513,3 +513,139 @@ double GenericDrawAxes::ad16ToUv(int x, int gain)
     int result = (double)(x * 20e6) / (double)(gain * pow(2.0, 16));
     return result;
 }
+
+void OpenGLExtensionFunctions::initialise()
+{
+#if JUCE_WINDOWS || JUCE_LINUX
+#define JUCE_INIT_GL_FUNCTION(name, returnType, params, callparams) \
+        name = (type_ ## name) OpenGLHelpers::getExtensionFunction (#name);
+
+    JUCE_GL_BASE_FUNCTIONS(JUCE_INIT_GL_FUNCTION)
+#undef JUCE_INIT_GL_FUNCTION
+
+#define JUCE_INIT_GL_FUNCTION(name, returnType, params, callparams) \
+        name = (type_ ## name) OpenGLHelpers::getExtensionFunction (#name); \
+        if (name == nullptr) \
+            name = (type_ ## name) OpenGLHelpers::getExtensionFunction (JUCE_STRINGIFY (name ## EXT));
+
+        JUCE_GL_EXTENSION_FUNCTIONS(JUCE_INIT_GL_FUNCTION)
+#if JUCE_OPENGL3
+        JUCE_GL_VERTEXBUFFER_FUNCTIONS(JUCE_INIT_GL_FUNCTION)
+#endif
+
+#undef JUCE_INIT_GL_FUNCTION
+#endif
+}
+
+GenericDrawAxesOpenGL::GenericDrawAxesOpenGL(GenericDrawAxesOpenGL::AxesType t)
+    : gotFirstSpike(false), type(t)
+{
+    ylims[0] = 0;
+    ylims[1] = 1;
+
+    xlims[0] = 0;
+    xlims[1] = 1;
+
+    font = Font("Default", 12, Font::plain);
+
+}
+
+GenericDrawAxesOpenGL::~GenericDrawAxesOpenGL()
+{
+
+}
+
+bool GenericDrawAxesOpenGL::updateSpikeData(SorterSpikePtr newSpike)
+{
+    if (!gotFirstSpike)
+    {
+        gotFirstSpike = true;
+    }
+
+    s = newSpike;
+    return true;
+}
+
+void GenericDrawAxesOpenGL::setYLims(double ymin, double ymax)
+{
+
+    //std::cout << "setting y limits to " << ymin << " " << ymax << std::endl;
+    ylims[0] = ymin;
+    ylims[1] = ymax;
+}
+void GenericDrawAxesOpenGL::getYLims(double* min, double* max)
+{
+    *min = ylims[0];
+    *max = ylims[1];
+}
+void GenericDrawAxesOpenGL::setXLims(double xmin, double xmax)
+{
+    xlims[0] = xmin;
+    xlims[1] = xmax;
+}
+void GenericDrawAxesOpenGL::getXLims(double* min, double* max)
+{
+    *min = xlims[0];
+    *max = xlims[1];
+}
+
+
+void GenericDrawAxesOpenGL::setType(GenericDrawAxesOpenGL::AxesType t)
+{
+    if (t < GenericDrawAxesOpenGL::WAVE1 || t > GenericDrawAxesOpenGL::PCA)
+    {
+        std::cout << "Invalid Axes type specified";
+        return;
+    }
+
+    type = t;
+}
+
+GenericDrawAxesOpenGL::AxesType GenericDrawAxesOpenGL::getType()
+{
+    return type;
+}
+
+int GenericDrawAxesOpenGL::roundUp(int numToRound, int multiple)
+{
+    if (multiple == 0)
+    {
+        return numToRound;
+    }
+
+    int remainder = numToRound % multiple;
+    if (remainder == 0)
+        return numToRound;
+    return numToRound + multiple - remainder;
+}
+
+
+void GenericDrawAxesOpenGL::makeLabel(int val, int gain, bool convert, char* s)
+{
+    if (convert)
+    {
+        double volt = ad16ToUv(val, gain) / 1000.;
+        if (abs(val) > 1e6)
+        {
+            //val = val/(1e6);
+            sprintf(s, "%.2fV", volt);
+        }
+        else if (abs(val) > 1e3)
+        {
+            //val = val/(1e3);
+            sprintf(s, "%.2fmV", volt);
+        }
+        else
+            sprintf(s, "%.2fuV", volt);
+    }
+    else
+    {
+        sprintf(s, "%d", (int)val);
+    }
+}
+
+double GenericDrawAxesOpenGL::ad16ToUv(int x, int gain)
+{
+    int result = (double)(x * 20e6) / (double)(gain * pow(2.0, 16));
+    return result;
+}

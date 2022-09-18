@@ -27,17 +27,18 @@
 #include "SpikeSorter.h"
 
 PCAProjectionAxes::PCAProjectionAxes(Electrode* electrode_) :
-    GenericDrawAxes(GenericDrawAxes::PCA),
+    GenericDrawAxesOpenGL(GenericDrawAxesOpenGL::PCA),
     electrode(electrode_),
     imageDim(500),
     rangeX(250),
     rangeY(250),
+    rangeZ(250),
     spikesReceivedSinceLastRedraw(0)
 {
     projectionImage = Image(Image::RGB, imageDim, imageDim, true);
     bufferSize = 600;
-    pcaMin[0] = pcaMin[1] = -5;
-    pcaMax[0] = pcaMax[1] = 5;
+    pcaMin[0] = pcaMin[1] = pcaMin[2] = -5;
+    pcaMax[0] = pcaMax[1] = pcaMax[2] = 5;
 
     rangeSet = false;
     inPolygonDrawingMode = false;
@@ -201,13 +202,20 @@ void PCAProjectionAxes::drawProjectedSpike(SorterSpikePtr s)
     if (s != nullptr && rangeSet)
     {
         Graphics g(projectionImage);
-
+        
         g.setColour(Colour(s->color[0], s->color[1], s->color[2]));
-
         float x = (s->pcProj[0] - pcaMin[0]) / (pcaMax[0] - pcaMin[0]) * rangeX;
         float y = (s->pcProj[1] - pcaMin[1]) / (pcaMax[1] - pcaMin[1]) * rangeY;
-        if (x >= 0 & y >= 0 & x <= rangeX & y <= rangeY)
-            g.fillEllipse(x, y, 2, 2);
+        float z = (s->pcProj[2] - pcaMin[2]) / (pcaMax[2] - pcaMin[2]) * rangeZ;
+            
+        //g.fillEllipse(x, y, 2, 2);
+        positions.add(x / rangeX, y / rangeY, z / rangeZ);
+        //std::cout << x << " " << y << " " << z << std::endl;
+        if (positions.size() % 150 == 0)
+        {
+            glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr> (static_cast<size_t> (positions.size()) * sizeof(float)), positions.getRawDataPointer(), GL_DYNAMIC_DRAW);
+            render();
+        }
     }
 }
 
@@ -273,6 +281,32 @@ void PCAProjectionAxes::clear()
     redrawSpikes = true;
 }
 
+void PCAProjectionAxes::initialise()
+{
+    GenericDrawAxesOpenGL::OpenGLExtensionFunctions::initialise();
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr> (static_cast<size_t> (positions.size()) * sizeof(float)), positions.getRawDataPointer(), GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+
+}
+
+void PCAProjectionAxes::render()
+{
+    glBegin(GL_POINTS);
+    for(int i=0;i<positions.size();i+=3)
+    {
+        glVertex3f(positions[i], positions[i+1], positions[i+2]);
+    }
+    glEnd();
+}
+
+void PCAProjectionAxes::shutdown()
+{
+    glDeleteBuffers(1, &buffer);
+    glDisableVertexAttribArray(0);
+}
 
 void PCAProjectionAxes::mouseDrag(const juce::MouseEvent& event)
 {

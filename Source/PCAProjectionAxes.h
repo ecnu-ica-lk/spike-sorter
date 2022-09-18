@@ -33,7 +33,7 @@
 class Electrode;
 class SpikeSorterCanvas;
 
-class PCAProjectionAxes : public GenericDrawAxes,  
+class PCAProjectionAxes : public GenericDrawAxesOpenGL,  
                           public Button::Listener
 {
 public:
@@ -58,6 +58,11 @@ public:
 
     /** Clears the axes*/
     void clear();
+
+    /** Functions For OpenGL*/
+    void initialise() override;
+    void shutdown() override;
+    void render() override;
 
     /** Mouse callbacks*/
     void mouseDown(const juce::MouseEvent& event);
@@ -100,6 +105,11 @@ private:
 
     Image projectionImage;
 
+    juce::String vertexShader;
+    juce::String fragmentShader;
+    GLuint buffer;
+    juce::Array<float> positions;
+
     Colour pointColour;
     Colour gridColour;
 
@@ -107,6 +117,7 @@ private:
 
     int rangeX;
     int rangeY;
+    int rangeZ;
 
     int spikesReceivedSinceLastRedraw;
 

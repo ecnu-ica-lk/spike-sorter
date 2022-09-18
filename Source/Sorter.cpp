@@ -146,7 +146,7 @@ void Sorter::projectOnPrincipalComponents(SorterSpikePtr so)
     {
         
 
-        so->pcProj[0] = so->pcProj[1] = 0;
+        so->pcProj[0] = so->pcProj[1] = so->pcProj[2] = 0;
 
         const int maxSample = so->getChannel()->getNumChannels() * so->getChannel()->getTotalSamples();
 

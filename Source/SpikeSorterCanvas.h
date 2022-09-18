@@ -164,6 +164,57 @@ private:
     Base class for WaveformAxes and PCAProjectionAxes
 
 */
+class GenericDrawAxesOpenGL : public OpenGLAppComponent,
+                              public OpenGLExtensionFunctions
+{
+public:
+
+    enum AxesType {
+        WAVE1 = 0,
+        WAVE2,
+        WAVE3,
+        WAVE4,
+        PCA = 4
+    };
+
+    /** Constructor */
+    GenericDrawAxesOpenGL(AxesType t);
+
+    /** Destructor */
+    virtual ~GenericDrawAxesOpenGL();
+
+    /** Add new spike to the plot */
+    virtual bool updateSpikeData(SorterSpikePtr s);
+
+    void setXLims(double xmin, double xmax);
+    void getXLims(double* xmin, double* xmax);
+    void setYLims(double ymin, double ymax);
+    void getYLims(double* ymin, double* ymax);
+
+    void setType(AxesType type);
+    AxesType getType();
+
+    virtual void paint(Graphics& g) = 0;
+
+    int roundUp(int, int);
+    void makeLabel(int val, int gain, bool convert, char* s);
+
+protected:
+    double xlims[2];
+    double ylims[2];
+
+    SorterSpikePtr s;
+
+    bool gotFirstSpike;
+
+    AxesType type;
+
+    Font font;
+
+    double ad16ToUv(int x, int gain);
+
+};
+
 class GenericDrawAxes : public Component
 {
 public:
@@ -213,6 +264,5 @@ protected:
     double ad16ToUv(int x, int gain);
 
 };
-
 
 #endif  //

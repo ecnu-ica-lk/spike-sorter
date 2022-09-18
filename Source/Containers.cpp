@@ -89,7 +89,7 @@ SorterSpikeContainer::SorterSpikeContainer(const SpikeChannel* channel, uint16 s
       timestamp(timestamp_)
 {
     color[0] = color[1] = color[2] = 127;
-    pcProj[0] = pcProj[1] = 0;
+    pcProj[0] = pcProj[1] = pcProj[2] = 0;
 
     int nSamples = chan->getNumChannels() * chan->getTotalSamples();
 
