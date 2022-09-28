@@ -183,7 +183,7 @@ void PCAProjectionAxes::paint(Graphics& g)
     {
         projectionImage.clear(juce::Rectangle<int>(0, 0, projectionImage.getWidth(), projectionImage.getHeight()),
             Colours::black);
-
+        positions.clear();
         bool subsample = false;
         int dk = (subsample) ? 5 : 1;
 
@@ -225,7 +225,7 @@ void PCAProjectionAxes::redraw(bool subsample)
 
     projectionImage.clear(juce::Rectangle<int>(0, 0, projectionImage.getWidth(), projectionImage.getHeight()),
         Colours::black);
-
+    
     int dk = (subsample) ? 5 : 1;
 
     for (int k = 0; k < bufferSize; k += dk)
